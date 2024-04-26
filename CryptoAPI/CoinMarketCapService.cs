@@ -25,7 +25,26 @@
             if (response.IsSuccessStatusCode)
             {
                 var jsonResponse = await response.Content.ReadAsStringAsync();
-                return jsonResponse;  // Or deserialize with JsonConvert.DeserializeObject if needed
+                return jsonResponse;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        // Returns a cryptocurrency based on user input
+        public async Task<string> GetCryptoInfoBySymbolAsync(string symbol)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, $"v1/cryptocurrency/info?symbol={symbol}");
+            var client = _clientFactory.CreateClient("CoinMarketCapClient");
+
+            HttpResponseMessage response = await client.SendAsync(request);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var jsonResponse = await response.Content.ReadAsStringAsync();
+                return jsonResponse;
             }
             else
             {

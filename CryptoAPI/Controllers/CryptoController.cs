@@ -20,5 +20,20 @@ namespace CryptoAPI.Controllers
             var listings = await _cmcService.GetLatestListingsAsync();
             return Ok(listings);
         }
+
+        // Get cryptocurrency based on user input
+        [HttpGet("info/{symbol}")]
+        public async Task<IActionResult> GetCryptoInfoBySymbol(string symbol)
+        {
+            var data = await _cmcService.GetCryptoInfoBySymbolAsync(symbol);
+            if (data != null)
+            {
+                return Ok(data);
+            }
+            else
+            {
+                return NotFound($"Information for the symbol '{symbol}' is not available.");
+            }
+        }
     }
 }
