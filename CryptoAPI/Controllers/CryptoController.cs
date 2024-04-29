@@ -25,7 +25,7 @@ namespace CryptoAPI.Controllers
         [HttpGet("details/{slug}")]
         public async Task<IActionResult> GetCryptoPrice(string slug)
         {
-            var data = await _cmcService.GetCryptoPriceAsync(slug);
+            var data = await _cmcService.GetCryptoInfoAsync(slug);
             if (data != null)
             {
                 return Ok(data);

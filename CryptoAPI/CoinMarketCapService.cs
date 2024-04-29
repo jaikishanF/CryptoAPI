@@ -1,4 +1,8 @@
-﻿namespace CryptoAPI
+﻿using CryptoAPI.Models;
+using System.Text.Json;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace CryptoAPI
 {
     public class CoinMarketCapService
     {
@@ -41,8 +45,8 @@
             }
         }
 
-        // Returns a cryptocurrency based on user input
-        public async Task<string> GetCryptoPriceAsync(string slug)
+        //Returns a cryptocurrency based on user input
+        public async Task<CryptoInfo> GetCryptoInfoAsync(string slug)
         {
             try
             {
@@ -54,19 +58,45 @@
                 if (response.IsSuccessStatusCode)
                 {
                     var jsonResponse = await response.Content.ReadAsStringAsync();
-                    return jsonResponse;
+
+                    // Adjust Serializer options because JSON and C# naming conventions are different
+                    var options = new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true,
+                        AllowTrailingCommas = true
+                    };
+
+                    // Deserializes the JSON response into model SingleCryptoResponse
+                    var result = JsonSerializer.Deserialize<SingleCryptoResponse>(jsonResponse, options);
+
+                    if (result?.Data != null)
+                    {
+                        // Extract the data from SingleCryptoResponse.Data
+                        var cryptoData = result.Data.Values.FirstOrDefault();
+                        if (cryptoData != null)
+                        {
+                            return new CryptoInfo
+                            {
+                                Name = cryptoData.Name,
+                                Symbol = cryptoData.Symbol,
+                                Price = cryptoData.Quote.USD.Price,
+                                MarketCap = cryptoData.Quote.USD.MarketCap
+                            };
+                        }
+                    }
+                    return new CryptoInfo { Name = "Not found", Price = null };
                 }
                 else
                 {
                     var errorResponse = await response.Content.ReadAsStringAsync();
                     Console.WriteLine($"API Error: {errorResponse}");
-                    return null;
+                    return new CryptoInfo { Name = "Error", Price = null };
                 }
             }
             catch (Exception ex)
             {
                 Console.WriteLine($"Exception caught: {ex.Message}");
-                return null;
+                return new CryptoInfo { Name = "Exception", Price = null };
             }
         }
     }
